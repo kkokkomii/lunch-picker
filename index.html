@@ -4,45 +4,42 @@
   <meta charset="UTF-8">
   <title>점메추 룰렛</title>
   <style>
-    body {
-      text-align: center;
-      font-family: Arial, sans-serif;
-      background-color: #f8f8f8;
-    }
-    h1 { margin-top: 30px; }
+    body { text-align: center; font-family: Arial; }
     canvas { margin-top: 40px; }
-    button {
-      margin-top: 30px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
   <h1>오늘의 점메추 룰렛</h1>
   <canvas id="roulette" width="500" height="500"></canvas>
-  <div>
-    <button onclick="spin()">🎯 룰렛 돌리기</button>
-  </div>
+  <button onclick="spin()">🎯 룰렛 돌리기</button>
 
   <script>
-    // 룰렛 항목 (나중에 DB나 API 연동 가능)
-    const items = ["한식", "중식", "일식", "양식", "분식", "패스트푸드"];
-
     const canvas = document.getElementById("roulette");
     const ctx = canvas.getContext("2d");
     const size = canvas.width;
     const radius = size / 2;
     const colors = ["#ff9999","#99ccff","#99ff99","#ffcc99","#ccccff","#ffff99"];
 
+    let items = [];  // DB에서 받아올 식당 이름 배열
     let startAngle = 0;
     let spinning = false;
     let spinAngle = 0;
     let spinSpeed = 0;
 
+    // ✅ 1) DB에서 데이터 가져오기
+    async function loadRestaurants() {
+      const res = await fetch("http://54.79.119.68:8000/restaurants");  // EC2 IP로 변경
+      const data = await res.json();
+      items = data.map(item => item.name); // 식당 이름 배열로 변환
+      drawRoulette();
+    }
+
+    // ✅ 2) 룰렛 그리기 함수
     function drawRoulette() {
+      if (items.length === 0) return;
       const slice = 2 * Math.PI / items.length;
+      ctx.clearRect(0, 0, size, size);
+
       for (let i = 0; i < items.length; i++) {
         const angle = startAngle + i * slice;
         ctx.beginPath();
@@ -60,7 +57,7 @@
         ctx.restore();
       }
 
-      // 룰렛 화살표
+      // 빨간 화살표
       ctx.beginPath();
       ctx.moveTo(radius - 10, 0);
       ctx.lineTo(radius + 10, 0);
@@ -69,19 +66,20 @@
       ctx.fill();
     }
 
+    // ✅ 3) 룰렛 돌리기
     function spin() {
-      if (spinning) return;
+      if (spinning || items.length === 0) return;
       spinning = true;
-      spinSpeed = Math.random() * 0.3 + 0.3; // 초기 속도
+      spinSpeed = Math.random() * 0.3 + 0.3;
       animate();
     }
 
     function animate() {
       if (!spinning) return;
       spinAngle += spinSpeed;
-      spinSpeed *= 0.98; // 감속
+      spinSpeed *= 0.98;
 
-      if (spinSpeed < 0.002) { // 멈춤
+      if (spinSpeed < 0.002) {
         spinning = false;
         const slice = 2 * Math.PI / items.length;
         const selectedIndex = Math.floor(((2 * Math.PI) - (spinAngle % (2 * Math.PI))) / slice) % items.length;
@@ -94,7 +92,8 @@
       requestAnimationFrame(animate);
     }
 
-    drawRoulette();
+    // ✅ 4) 페이지 로드 시 DB 데이터 로드
+    loadRestaurants();
   </script>
 </body>
 </html>
