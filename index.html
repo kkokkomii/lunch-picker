@@ -2,10 +2,99 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>Lunch Picker Test</title>
+  <title>점메추 룰렛</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+    }
+    h1 { margin-top: 30px; }
+    canvas { margin-top: 40px; }
+    button {
+      margin-top: 30px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1>점메추 테스트 페이지</h1>
-  <p>여기는 GitHub Pages에서 호스팅된 무료 테스트 페이지입니다.</p>
+  <h1>오늘의 점메추 룰렛</h1>
+  <canvas id="roulette" width="500" height="500"></canvas>
+  <div>
+    <button onclick="spin()">🎯 룰렛 돌리기</button>
+  </div>
+
+  <script>
+    // 룰렛 항목 (나중에 DB나 API 연동 가능)
+    const items = ["한식", "중식", "일식", "양식", "분식", "패스트푸드"];
+
+    const canvas = document.getElementById("roulette");
+    const ctx = canvas.getContext("2d");
+    const size = canvas.width;
+    const radius = size / 2;
+    const colors = ["#ff9999","#99ccff","#99ff99","#ffcc99","#ccccff","#ffff99"];
+
+    let startAngle = 0;
+    let spinning = false;
+    let spinAngle = 0;
+    let spinSpeed = 0;
+
+    function drawRoulette() {
+      const slice = 2 * Math.PI / items.length;
+      for (let i = 0; i < items.length; i++) {
+        const angle = startAngle + i * slice;
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, angle, angle + slice);
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(angle + slice / 2);
+        ctx.fillStyle = "black";
+        ctx.font = "20px Arial";
+        ctx.textAlign = "right";
+        ctx.fillText(items[i], radius - 10, 10);
+        ctx.restore();
+      }
+
+      // 룰렛 화살표
+      ctx.beginPath();
+      ctx.moveTo(radius - 10, 0);
+      ctx.lineTo(radius + 10, 0);
+      ctx.lineTo(radius, 30);
+      ctx.fillStyle = "red";
+      ctx.fill();
+    }
+
+    function spin() {
+      if (spinning) return;
+      spinning = true;
+      spinSpeed = Math.random() * 0.3 + 0.3; // 초기 속도
+      animate();
+    }
+
+    function animate() {
+      if (!spinning) return;
+      spinAngle += spinSpeed;
+      spinSpeed *= 0.98; // 감속
+
+      if (spinSpeed < 0.002) { // 멈춤
+        spinning = false;
+        const slice = 2 * Math.PI / items.length;
+        const selectedIndex = Math.floor(((2 * Math.PI) - (spinAngle % (2 * Math.PI))) / slice) % items.length;
+        alert("오늘의 점메추는: " + items[selectedIndex] + "!");
+      }
+
+      ctx.clearRect(0, 0, size, size);
+      startAngle = spinAngle;
+      drawRoulette();
+      requestAnimationFrame(animate);
+    }
+
+    drawRoulette();
+  </script>
 </body>
 </html>
