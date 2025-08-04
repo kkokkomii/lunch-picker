@@ -28,13 +28,21 @@
 
     // ✅ 1) DB에서 데이터 가져오기
     async function loadRestaurants() {
-      const res = await fetch("http://54.79.119.68:8000/restaurants");  // EC2 IP로 변경
-      const data = await res.json();
-      items = data.map(item => item.name); // 식당 이름 배열로 변환
-      drawRoulette();
+      try {
+        const res = await fetch("http://54.79.119.68:8000/restaurants"); // 실제 EC2 IP로 교체
+        const data = await res.json();
+        items = data.map(item => item.name); // 식당 이름만 배열로
+        if (items.length === 0) {
+          alert("DB에 식당 데이터가 없습니다.");
+        } else {
+          drawRoulette();  // ✅ 데이터 받은 뒤 룰렛 그리기
+        }
+      } catch (err) {
+        console.error("API 호출 오류:", err);
+        alert("API에서 데이터를 불러오지 못했습니다.");
+      }
     }
 
-    // ✅ 2) 룰렛 그리기 함수
     function drawRoulette() {
       if (items.length === 0) return;
       const slice = 2 * Math.PI / items.length;
@@ -66,7 +74,6 @@
       ctx.fill();
     }
 
-    // ✅ 3) 룰렛 돌리기
     function spin() {
       if (spinning || items.length === 0) return;
       spinning = true;
@@ -92,7 +99,7 @@
       requestAnimationFrame(animate);
     }
 
-    // ✅ 4) 페이지 로드 시 DB 데이터 로드
+    // ✅ 페이지 로드 시 데이터 불러오기
     loadRestaurants();
   </script>
 </body>
