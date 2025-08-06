@@ -92,12 +92,16 @@
       spinAngle += spinSpeed;
       spinSpeed *= 0.98;
 
-      if (spinSpeed < 0.002) {
-        spinning = false;
-        const slice = 2 * Math.PI / items.length;
-        const selectedIndex = Math.floor(((2 * Math.PI) - (spinAngle % (2 * Math.PI))) / slice) % items.length;
-        alert("🎉 오늘의 점메추는: " + items[selectedIndex] + "!");
-      }
+    if (spinSpeed < 0.002) {
+      spinning = false;
+      const slice = 2 * Math.PI / items.length;
+      // 🔹 화살표가 위쪽이라 + Math.PI/2 보정
+      const adjustedAngle = (spinAngle + Math.PI / 2) % (2 * Math.PI);
+      const selectedIndex = Math.floor((items.length - (adjustedAngle / slice)) % items.length);
+      
+      alert("🎉 오늘의 점메추는: " + items[selectedIndex] + "!");
+    }
+
 
       ctx.clearRect(0, 0, size, size);
       startAngle = spinAngle;
@@ -110,3 +114,4 @@
   </script>
 </body>
 </html>
+
