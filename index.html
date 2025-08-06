@@ -29,7 +29,7 @@
     // ✅ 1) DB에서 데이터 가져오기
     async function loadRestaurants() {
       try {
-        const res = await fetch("http://54.79.119.68:8000/restaurants"); // 실제 EC2 IP로 교체
+        const res = await fetch("https://kkokkomii.github.io/lunch-picker/"); // 실제 EC2 IP로 교체
         const data = await res.json();
         items = data.map(item => item.name); // 식당 이름만 배열로
         if (items.length === 0) {
@@ -104,3 +104,4 @@
   </script>
 </body>
 </html>
+
